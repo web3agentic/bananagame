@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<script charset="UTF-8" async type="text/javascript" src="./76d476f4-5151-44b4-9499-0f0c0f2d3016.js"></script><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banana Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        banana: '#FFE135',
+                        purple: '#8A2BE2',
+                        darkPurple: '#6A0DAD',
+                        navBg: '#1A1A1A'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom animations and styles */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .banana-pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .page-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* Dark mode support */
+        .dark body {
+            background-color: #181818;
+            color: white;
+        }
+        
+        /* Hide all pages by default */
+        .page {
+            display: none;
+        }
+        
+        /* Show active page */
+        .page.active {
+            display: block;
+        }
+        
+        /* Custom circular progress */
+        .circular-progress {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: conic-gradient(#8A2BE2 0%, transparent 0%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+        
+        .circular-progress::before {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background-color: #FFE135;
+        }
+        
+        .progress-value {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            bottom: 10px;
+        }
+        
+        .banana-img {
+            width: 160px;
+            height: 160px;
+            transition: transform 0.2s;
+            font-size: 100px;
+            z-index: 10;
+        }
+        
+        .points-popup {
+            position: absolute;
+            color: #8A2BE2;
+            font-weight: bold;
+            font-size: 24px;
+            animation: float-up 1s ease-out forwards;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div id="app" class="min-h-screen bg-banana dark:bg-gray-900 relative overflow-hidden flex flex-col">
+        <!-- App Header -->
+        <header class="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-800">
+            <button id="back-button" class="text-2xl">✕</button>
+            <h1 class="text-2xl font-bold">BANANA</h1>
+            <div class="flex">
+                <button class="text-2xl mr-2">↓</button>
+                <button class="text-2xl">⋮</button>
+            </div>
+        </header>
+
+        <!-- Home Page -->
+        <div id="home-page" class="page active flex-1 flex flex-col">
+            <!-- Top banner -->
+            <div class="bg-green-500 p-4 flex items-center justify-between interact-button">
+                <div class="flex items-center interact-button">
+                    <div class="flex items-center interact-button">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23FFE135' d='M409.5 60.5c-19.9 2.3-32.4 20-39.1 36.2-35.9-24.5-86.2-36.3-115.4-21C214.2 26.1 149.6 0 110.9 0 85.8 0 68.5 10.4 57.6 29c-21.8 37.2-8.5 92.3-3.9 113.6-29 4.3-53.7 25.5-53.7 81.4 0 67.6 75.8 69.9 85.8 69.9-6.1 13.7-9.1 36.7-7 57 2 19.8 9.2 36.1 20.4 45.9 13.3 11.7 29.1 10.8 44.9 1.3-8.8 17.1-8.3 34.8-1.8 49.3 9.1 20.4 30.5 31.8 47.2 31.8 49.9 0 69-58.8 80.5-93.7 11.6-35.1 35.4-37.2 78.9-74.5 25.7-22.1 42.1-56.3 47.3-98.7 7.3-59.3-7.3-95.9-40.5-122.3 7.4-10.8 33.8-8.3 57.3-8.9 20.5-.5 53.5-14.1 31.4-46.4-10.7-15.6-27-23.7-53-23.7-1.8-.1-3.4-.1-5.9.2z'/%3E%3C/svg%3E" alt="Banana" class="w-12 h-12 mr-2">
+                        <span class="text-white text-lg font-bold interact-button">Now Banana is ready in LINE!</span>
+                    </div>
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300B900' d='M19.952 9.308c0-3.984-3.936-7.228-8.772-7.228s-8.772 3.244-8.772 7.228c0 3.584 3.128 6.572 7.332 7.176.324.072.756.216.864.492.096.24.06.624.036.876 0 0-.12.66-.132.804-.048.264-.204 1.032.888.564s5.904-3.528 8.064-6c1.488-1.644 1.492-3.288 1.492-3.912z'/%3E%3C/svg%3E" alt="LINE" class="w-8 h-8 ml-4">
+                </div>
+                <button class="text-2xl text-white interact-button">✕</button>
+            </div>
+
+            <!-- Harvesting section -->
+            <div class="interact-button flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg mx-4 mt-4">
+                <div class="interact-button text-left">
+                    <div class="interact-button text-gray-600 dark:text-gray-300">Remaining Harvest</div>
+                    <div class="interact-button flex items-center mt-1">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23FFE135' d='M409.5 60.5c-19.9 2.3-32.4 20-39.1 36.2-35.9-24.5-86.2-36.3-115.4-21C214.2 26.1 149.6 0 110.9 0 85.8 0 68.5 10.4 57.6 29c-21.8 37.2-8.5 92.3-3.9 113.6-29 4.3-53.7 25.5-53.7 81.4 0 67.6 75.8 69.9 85.8 69.9-6.1 13.7-9.1 36.7-7 57 2 19.8 9.2 36.1 20.4 45.9 13.3 11.7 29.1 10.8 44.9 1.3-8.8 17.1-8.3 34.8-1.8 49.3 9.1 20.4 30.5 31.8 47.2 31.8 49.9 0 69-58.8 80.5-93.7 11.6-35.1 35.4-37.2 78.9-74.5 25.7-22.1 42.1-56.3 47.3-98.7 7.3-59.3-7.3-95.9-40.5-122.3 7.4-10.8 33.8-8.3 57.3-8.9 20.5-.5 53.5-14.1 31.4-46.4-10.7-15.6-27-23.7-53-23.7-1.8-.1-3.4-.1-5.9.2z'/%3E%3C/svg%3E" alt="Banana" class="w-6 h-6 mr-1">
+                        <span class="interact-button text-xl font-bold">x<span id="banana-count">0</span></span>
+                    </div>
+                </div>
+                <button id="harvest-btn" class=" interact-buttonbg-purple text-white font-bold py-3 px-8 rounded-full">
+                    Harvest
+                    <div class="interact-button text-sm">Share Banana to get more</div>
+                </button>
+            </div>
+
+            <!-- Peels counter -->
+            <div class="px-4 py-2 mt-4">
+                <div class="flex items-center">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23FFE135' d='M409.5 60.5c-19.9 2.3-32.4 20-39.1 36.2-35.9-24.5-86.2-36.3-115.4-21C214.2 26.1 149.6 0 110.9 0 85.8 0 68.5 10.4 57.6 29c-21.8 37.2-8.5 92.3-3.9 113.6-29 4.3-53.7 25.5-53.7 81.4 0 67.6 75.8 69.9 85.8 69.9-6.1 13.7-9.1 36.7-7 57 2 19.8 9.2 36.1 20.4 45.9 13.3 11.7 29.1 10.8 44.9 1.3-8.8 17.1-8.3 34.8-1.8 49.3 9.1 20.4 30.5 31.8 47.2 31.8 49.9 0 69-58.8 80.5-93.7 11.6-35.1 35.4-37.2 78.9-74.5 25.7-22.1 42.1-56.3 47.3-98.7 7.3-59.3-7.3-95.9-40.5-122.3 7.4-10.8 33.8-8.3 57.3-8.9 20.5-.5 53.5-14.1 31.4-46.4-10.7-15.6-27-23.7-53-23.7-1.8-.1-3.4-.1-5.9.2z'/%3E%3C/svg%3E" alt="Banana Peel" class="w-5 h-5">
+                    <span class="text-xl font-bold ml-2" id="peels-count">5</span>
+                    <span class="ml-2">›</span>
+                </div>
+                
+                <!-- Circular progress with banana -->
+                <div class="flex justify-center items-center mt-6">
+                    <div class="circular-progress" id="progress-circle">
+                        <div class="relative w-48 h-48 flex items-center justify-center">
+                            <div id="banana-btn" class="text-8xl cursor-pointer banana-img flex items-center justify-center">🍌</div>
+                        </div>
+                        <div class="progress-value" id="progress-value">5/60</div>
+                    </div>
+                </div>
+                
+                <!-- Timer section -->
+                <div class="flex justify-between items-center mt-6">
+                    <div class="flex items-center">
+                        <div class="bg-amber-600 rounded-lg p-2">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23FFE135' d='M409.5 60.5c-19.9 2.3-32.4 20-39.1 36.2-35.9-24.5-86.2-36.3-115.4-21C214.2 26.1 149.6 0 110.9 0 85.8 0 68.5 10.4 57.6 29c-21.8 37.2-8.5 92.3-3.9 113.6-29 4.3-53.7 25.5-53.7 81.4 0 67.6 75.8 69.9 85.8 69.9-6.1 13.7-9.1 36.7-7 57 2 19.8 9.2 36.1 20.4 45.9 13.3 11.7 29.1 10.8 44.9 1.3-8.8 17.1-8.3 34.8-1.8 49.3 9.1 20.4 30.5 31.8 47.2 31.8 49.9 0 69-58.8 80.5-93.7 11.6-35.1 35.4-37.2 78.9-74.5 25.7-22.1 42.1-56.3 47.3-98.7 7.3-59.3-7.3-95.9-40.5-122.3 7.4-10.8 33.8-8.3 57.3-8.9 20.5-.5 53.5-14.1 31.4-46.4-10.7-15.6-27-23.7-53-23.7-1.8-.1-3.4-.1-5.9.2z'/%3E%3C/svg%3E" alt="Bag" class="w-6 h-6">
+                        </div>
+                        <span class="ml-3">Bag</span>
+                    </div>
+                    <div class="bg-amber-200 px-4 py-2 rounded-lg flex items-center">
+                        <span class="mr-3">Claim your Banana in</span>
+                        <span class="text-2xl font-bold" id="timer">00:00:57</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="bg-purple rounded-full p-2 flex justify-center items-center">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E" alt="Info" class="w-6 h-6">
+                        </div>
+                        <span class="ml-1">x2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Page -->
+        <div id="tasks-page" class="page flex-1 flex flex-col bg-black text-white interact-button">
+            <div class="p-6 interact-button">
+                <h2 class="text-4xl font-bold mb-4 interact-button">Click, Peel, and Earn! Let's Go Bananas! 🍌</h2>
+                
+                <div class="interact-button bg-white text-black rounded-3xl p-6 mb-6">
+                    <div class="interact-button flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-bold">Complete Every 3 Tasks To Get A Banana!</h3>
+                        <button class="interact-button bg-gray-300 text-gray-700 px-6 py-2 rounded-full">Claim</button>
+                    </div>
+                    
+                    <!-- Progress bar -->
+                    <div class="bg-gray-300 h-4 rounded-full relative mt-4">
+                        <div class="absolute right-0 top-0 transform translate-x-1/2 -translate-y-1/2 bg-gray-100 rounded-full w-6 h-6 border-2 border-gray-300"></div>
+                        <div class="w-0 h-full bg-purple rounded-full" id="tasks-progress-bar"></div>
+                        <div class="text-center mt-1">0/3</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl">Tasks</h3>
+                    <span>0/0 Completed</span>
+                </div>
+                
+                <div class="text-center py-10 text-gray-400 text-xl">
+                    No available data
+                </div>
+            </div>
+        </div>
+
+        <!-- Apes/Invite Page -->
+        <div id="apes-page" class="page flex-1 flex flex-col bg-purple">
+            <div class="p-6 text-white">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-4xl font-bold">Invite Troops to Get Banana</h2>
+                    <div class="bg-white rounded-full p-3 flex justify-center items-center">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23333' d='M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E" alt="Rules" class="w-6 h-6">
+                    </div>
+                </div>
+                
+                <div class="bg-white text-black rounded-3xl p-6 mb-6">
+                    <div class="flex">
+                        <div class="w-1/2 border-r border-gray-300">
+                            <h3 class="text-2xl font-bold mb-4">Total</h3>
+                            <div class="text-5xl font-bold mb-2">0</div>
+                            <div class="text-gray-600">Total Invited</div>
+                        </div>
+                        <div class="interact-button w-1/2 pl-4 relative">
+                            <h3 class="interact-button text-2xl font-bold mb-4">Premium</h3>
+                            <div class="interact-button absolute top-0 right-0 bg-red-500 text-white px-2 py-1 rounded-lg">NEW</div>
+                            <button class="interact-button bg-gray-300 text-gray-700 px-6 py-2 rounded-full mt-12">Claim</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Milestones -->
+                    <div class="flex justify-between items-center mt-6">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gray-200 rounded-full p-1 mb-1 w-8 h-8 flex items-center justify-center">
+                                <span>x1</span>
+                            </div>
+                            <span>1</span>
+                        </div>
+                        <div class="h-px bg-gray-300 flex-1 mx-1"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gray-200 rounded-full p-1 mb-1 w-8 h-8 flex items-center justify-center">
+                                <span>x1</span>
+                            </div>
+                            <span>2</span>
+                        </div>
+                        <div class="h-px bg-gray-300 flex-1 mx-1"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gray-200 rounded-full p-1 mb-1 w-8 h-8 flex items-center justify-center">
+                                <span>x1</span>
+                            </div>
+                            <span>3</span>
+                        </div>
+                        <div class="h-px bg-gray-300 flex-1 mx-1"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gray-200 rounded-full p-1 mb-1 w-8 h-8 flex items-center justify-center">
+                                <span>x1</span>
+                            </div>
+                            <span>4</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-2xl mb-4">Frenz</h3>
+                
+                <div class="text-center py-10 text-xl">
+                    No Troops Yet 😔
+                </div>
+                
+                <div class="flex justify-between items-center mt-8">
+                    <button class="bg-yellow-300 text-black py-3 px-6 rounded-full font-bold flex items-center w-3/4">
+                        <span class="mr-2">🐵</span> Invite Troops
+                    </button>
+                    <button class="bg-yellow-300 text-black p-4 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bg-navBg text-white rounded-full mx-4 mb-4 flex items-center justify-around p-2">
+            <button id="nav-home" class="flex flex-col items-center justify-center py-2 px-4 rounded-full">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23FFE135' d='M409.5 60.5c-19.9 2.3-32.4 20-39.1 36.2-35.9-24.5-86.2-36.3-115.4-21C214.2 26.1 149.6 0 110.9 0 85.8 0 68.5 10.4 57.6 29c-21.8 37.2-8.5 92.3-3.9 113.6-29 4.3-53.7 25.5-53.7 81.4 0 67.6 75.8 69.9 85.8 69.9-6.1 13.7-9.1 36.7-7 57 2 19.8 9.2 36.1 20.4 45.9 13.3 11.7 29.1 10.8 44.9 1.3-8.8 17.1-8.3 34.8-1.8 49.3 9.1 20.4 30.5 31.8 47.2 31.8 49.9 0 69-58.8 80.5-93.7 11.6-35.1 35.4-37.2 78.9-74.5 25.7-22.1 42.1-56.3 47.3-98.7 7.3-59.3-7.3-95.9-40.5-122.3 7.4-10.8 33.8-8.3 57.3-8.9 20.5-.5 53.5-14.1 31.4-46.4-10.7-15.6-27-23.7-53-23.7-1.8-.1-3.4-.1-5.9.2z'/%3E%3C/svg%3E" alt="Home" class="w-6 h-6">
+                <span>Home</span>
+            </button>
+            <button id="nav-tasks" class="flex flex-col items-center justify-center py-2 px-4 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                <span>Tasks</span>
+            </button>
+            <button id="nav-apes" class="flex flex-col items-center justify-center py-2 px-4 rounded-full">
+                <span class="text-xl">🐵</span>
+                <span>Apes</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // Check for dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+        
+        // Game state
+        const gameState = {
+            bananas: 0,
+            peels: 5,
+            clicks: 0,
+            maxClicks: 60,
+            timer: 57, // seconds
+            timerInterval: null
+        };
+        
+        // DOM elements
+        const bananaBtn = document.getElementById('banana-btn');
+        const bananaCount = document.getElementById('banana-count');
+        const peelsCount = document.getElementById('peels-count');
+        const progressValue = document.getElementById('progress-value');
+        const progressCircle = document.getElementById('progress-circle');
+        const timerElement = document.getElementById('timer');
+        
+        // Navigation elements
+        const navHome = document.getElementById('nav-home');
+        const navTasks = document.getElementById('nav-tasks');
+        const navApes = document.getElementById('nav-apes');
+        const backButton = document.getElementById('back-button');
+        
+        // Pages
+        const homePage = document.getElementById('home-page');
+        const tasksPage = document.getElementById('tasks-page');
+        const apesPage = document.getElementById('apes-page');
+        
+        // Update progress display
+        function updateProgress() {
+            // Update progress text
+            progressValue.textContent = `${gameState.clicks}/${gameState.maxClicks}`;
+            
+            // Update progress circle
+            const progressPercentage = (gameState.clicks / gameState.maxClicks) * 100;
+            progressCircle.style.background = `conic-gradient(#8A2BE2 ${progressPercentage}%, transparent ${progressPercentage}%)`;
+            
+            // Update peels count
+            peelsCount.textContent = gameState.peels;
+        }
+        
+        // Update timer display
+        function updateTimer() {
+            const minutes = Math.floor(gameState.timer / 60);
+            const seconds = gameState.timer % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:00`;
+            
+            if (gameState.timer <= 0) {
+                clearInterval(gameState.timerInterval);
+                timerElement.textContent = "00:00:00";
+                
+                // Reward user when timer hits zero
+                gameState.bananas++;
+                bananaCount.textContent = gameState.bananas;
+                
+                // Reset timer
+                gameState.timer = 57;
+                startTimer();
+            }
+        }
+        
+        // Start the countdown timer
+        function startTimer() {
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                updateTimer();
+            }, 1000);
+        }
+        
+        // Navigate between pages
+        function navigateTo(page) {
+            // Hide all pages
+            homePage.classList.remove('active');
+            tasksPage.classList.remove('active');
+            apesPage.classList.remove('active');
+            
+            // Remove active class from all nav buttons
+            navHome.classList.remove('bg-purple');
+            navTasks.classList.remove('bg-purple');
+            navApes.classList.remove('bg-purple');
+            
+            // Show selected page
+            if (page === 'home') {
+                homePage.classList.add('active');
+                navHome.classList.add('bg-purple');
+            } else if (page === 'tasks') {
+                tasksPage.classList.add('active');
+                navTasks.classList.add('bg-purple');
+            } else if (page === 'apes') {
+                apesPage.classList.add('active');
+                navApes.classList.add('bg-purple');
+            }
+        }
+        
+        // Initialize game
+        function initGame() {
+            // Set initial values
+            bananaCount.textContent = gameState.bananas;
+            updateProgress();
+            updateTimer();
+            startTimer();
+            
+            // Banana click event
+            bananaBtn.addEventListener('click', () => {
+                // Add animation
+                bananaBtn.classList.add('banana-pulse');
+                
+                // Create and show the +1 points popup
+                const pointsPopup = document.createElement('div');
+                pointsPopup.className = 'points-popup';
+                pointsPopup.textContent = '+1';
+                pointsPopup.style.left = '50%';
+                pointsPopup.style.top = '50%';
+                pointsPopup.style.transform = 'translate(-50%, -50%)';
+                progressCircle.appendChild(pointsPopup);
+                
+                // Increment click counter
+                if (gameState.clicks < gameState.maxClicks) {
+                    gameState.clicks++;
+                    gameState.peels++;
+                    updateProgress();
+                }
+                
+                // Remove animation after it completes
+                setTimeout(() => {
+                    bananaBtn.classList.remove('banana-pulse');
+                }, 300);
+                
+                // Remove the points popup after animation completes
+                setTimeout(() => {
+                    progressCircle.removeChild(pointsPopup);
+                }, 1000);
+            });
+            
+            // Navigation events
+            navHome.addEventListener('click', () => navigateTo('home'));
+            navTasks.addEventListener('click', () => navigateTo('tasks'));
+            navApes.addEventListener('click', () => navigateTo('apes'));
+            backButton.addEventListener('click', () => navigateTo('home'));
+        }
+        
+        // Start game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
